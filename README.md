@@ -1,4 +1,4 @@
-# Eckmann Revisited: NOAC Therapy Analysis
+# Analysis Code: What is the stroke risk threshold for anticoagulation to provide net benefit in atrial fibrillation? A Markov decision model analysis
 
 A comprehensive decision-analytic model examining Novel Oral Anticoagulant (NOAC) therapy in patients with atrial fibrillation, focusing on treatment thresholds and net benefit analysis across varying stroke risk levels.
 
