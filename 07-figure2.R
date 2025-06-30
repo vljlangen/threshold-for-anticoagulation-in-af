@@ -1,23 +1,16 @@
- 
+#Tipping point for OAC medication main script
+#by: Aleksi Kristian Winsten
+#contact: alkrwi@utu.fi
+#date: 7.06.2025
+#University of Turku, Finland
 
-###########################################################################
-###########################################################################
-###                                                                     ###
-###                           CREATE FIGURE 2                           ###
-###                                                                     ###
-###########################################################################
-###########################################################################
-
-# Run first main_analyses.R
-
+load("data/main-analysis-70-year-olds.RData")
 
 library(pacman)
 
 #Load rest of packages with pacman
-p_load(ggplot2, ggthemes, tibble, dplyr, showtext, magick,
-       tidyr, forcats, circlize, patchwork, gt,
-       ggstream, cowplot, pdftools, foreach, doParallel, doRNG, interp,
-       stringr)
+p_load(ggplot2, dplyr, showtext, magick,
+       stringr, ggstream, cowplot, grid)
 
 
 
@@ -69,7 +62,6 @@ for (i in seq(0,10, by = 0.1)) {
 }
 
 
-
 #################################################################
 ##           Prepare stylistic settings of the graph           ##
 #################################################################
@@ -77,8 +69,6 @@ for (i in seq(0,10, by = 0.1)) {
 
 # Load specific font from Google Fonts
 font_add_google("Rosario", family = "rosario")
-
-# Invoke showtext
 showtext_auto()
 
 # Define constants
@@ -105,7 +95,7 @@ ylim_custom <- 16000
 order <- c("Death",
            "Ischemic stroke",
            "Extracranial bleeding",
-           "Intracranial bleeding",
+           "Hemorrhagic stroke",
            "Other intracranial bleeding")
 
 
@@ -116,7 +106,7 @@ with_noac_plot_data <- with_noac_plot_data %>% rename(Count = prop,
 
 without_noac_plot_data <- stream_data_without_noac
 without_noac_plot_data <- without_noac_plot_data %>% rename(Count = prop,
-                                                      `Outcome events` = obs)
+                                                            `Outcome events` = obs)
 
 # Remodel disability values
 with_noac_plot_data <- with_noac_plot_data %>%
@@ -131,6 +121,13 @@ without_noac_plot_data <- without_noac_plot_data %>%
     `Outcome events` == "dead" ~ "Death",  # Rename "dead" to "Death"
     TRUE ~  str_to_sentence(`Outcome events`)   # Capitalize first letter of all other values
   ))
+
+
+# Rename "Intracranial bleeding" to "Hemorrhagic stroke"
+with_noac_plot_data$`Outcome events`[with_noac_plot_data$`Outcome events` == "Intracranial bleeding"] <- "Hemorrhagic stroke"
+without_noac_plot_data$`Outcome events`[without_noac_plot_data$`Outcome events` == "Intracranial bleeding"] <- "Hemorrhagic stroke"
+
+
 
 
 
@@ -159,7 +156,7 @@ p1 <- with_noac_plot_data %>%
                                     margin = margin(r = y_margin, unit = "pt"))) +
   ggtitle("With\nNOAC medication")
 
-  
+
 
 # Plot 2
 p2 <- without_noac_plot_data %>% 
@@ -182,7 +179,7 @@ p2 <- without_noac_plot_data %>%
                                     face = "bold",
                                     margin = margin(r = y_margin, unit = "pt"))) +
   ggtitle("Without\nNOAC medication")
-  
+
 
 
 
@@ -218,7 +215,7 @@ panel_fig2 <- plot_grid(p1 + theme(legend.position="none"),
 
 # Display the panel
 print(panel_fig2)
- 
+
 
 ###########################################################################
 ###########################################################################
@@ -228,20 +225,20 @@ print(panel_fig2)
 ###########################################################################
 ###########################################################################
 
+# For PDF with proper font handling
+pdf("figures/figure2.pdf", width = 15, height = 8)
+showtext_begin()  # Explicitly begin showtext
 
-# When showtext() is used to change font(s), plots have to be saved as pdf files,
-# otherwise proportions get distorted.
+# Draw the panel
+print(panel_fig2)
 
-# Save as PDF with dpi specified
-ggsave("figures/figure2.pdf", width = 15, height =8, dpi = 600)
+showtext_end()  # End showtext
+dev.off()
 
-# Load that pdf file with the magick package
+# Create PNG version
 pdf_image <- magick::image_read_pdf("figures/figure2.pdf", density = 600)
-
-# Save it as PNG
 image_write(pdf_image,
             path = "figures/figure2.png",
             format = "png",
             density = 600)
-
 

@@ -1,26 +1,51 @@
 #Tipping point for OAC medication main script
 #by: Aleksi Kristian Winsten
 #contact: alkrwi@utu.fi
-#date: 19.02.2025
+#date: 7.06.2025
 #University of Turku, Finland
+
+
+############################################################################
+############################################################################
+###                                                                      ###
+###                    MAIN ANALYSES FOR 80-YEAR-OLDS                    ###
+###                                                                      ###
+############################################################################
+############################################################################
+
+
+# simulation parameters
+#set simulation size
+sim <- 10000
+#simulation time
+sim.time <- 10*12 #years * months in a year
+#set global seed for the random number generator
+seed <- 46692
+#set policy to keep NOAC medication after hemorrhagic stroke and other
+#intracranial bleeding or not
+end.noac.after.bleeding <- FALSE
+#simulation age
+age <- 80
+
+#changes made: added sensitivity analysis for reviewers
 
 library(pacman)
 
 #Load rest of packages with pacman
-p_load(ggplot2, ggthemes, tibble, dplyr, showtext, magick,
-       tidyr, forcats, circlize, patchwork, gt,
-       ggstream, cowplot, pdftools, foreach, doParallel, doRNG, interp)
-
+p_load(dplyr, gt,
+       foreach, doParallel, doRNG)
 
 #######################################################################
 ## calculate the severity coefficients using linear regression model ##
 #######################################################################
 severity_matrix <- matrix(c(
   #stroke
-
+  #c(1, 1, 0, 1, 0, 0, 0, 0, rep(0,24), 0.45),
   c(0, 0, 0, 1, 0, 0, 0, 0, rep(0,24), 0.55),
   c(0, 0, 0, 0, 1, 1, 1, 0, rep(0,24), 0.38),
   c(0, 0, 0, 0, 0, 0, 0, 1, rep(0,24), 0.62),
+  #c(1, 0, 0, 0, -4.9, 0, 0, 0, rep(0,24), 0),
+  #c(0, 1, 0, 0, 0, -2.2, 0, 0, rep(0,24), 0),
   c(0, 1, 1, 0, 0, 1, 1, 0, rep(0,24), 2*0.406),
   c(0, 0, 0, 1, 0, 0, 0, 1, rep(0,24), 2*0.437),
   c(1, 0, 0, 0, 0, 0, 0, 0, rep(0,24), 0.139),
@@ -65,6 +90,14 @@ severity_matrix <- matrix(c(
   c(rep(0,8), 0, 0, 0, 0, 0, 1, 0, 0, rep(0,16), 0.22),
   c(rep(0,8), 0, 0, 0, 0, 0, 0, 0, 1, rep(0,16), 0.23),
   c(rep(0,8), -1.62, 0, 0, 0, 1, 0, 0, 0, rep(0,16), 0),
+  #c(rep(0,8), 1, 0, 0, 0, 0, 0, 0, 0, rep(0,16), 0.286),
+  #c(rep(0,8), 0, 1, 0, 0, 0, 0, 0, 0, rep(0,16), 0.407),
+  #c(rep(0,8), 0, 0, 1, 0, 0, 0, 0, 0, rep(0,16), 0.123),
+  #c(rep(0,8), 0, 0, 0, 1, 0, 0, 0, 0, rep(0,16), 0.184),
+  #c(rep(0,8), 0, 0, 0, 0, 1, 0, 0, 0, rep(0,16), 0.576),
+  #c(rep(0,8), 0, 0, 0, 0, 0, 1, 0, 0, rep(0,16), 0.237),
+  #c(rep(0,8), 0, 0, 0, 0, 0, 0, 1, 0, rep(0,16), 0.102),
+  #c(rep(0,8), 0, 0, 0, 0, 0, 0, 0, 1, rep(0,16), 0.085),
   c(rep(0,8), 1, 0, 0, 0, 0, 0, 0, 0, rep(0,16), 0.225),
   c(rep(0,8), 0, 1, 0, 0, 0, 0, 0, 0, rep(0,16), 0.453),
   c(rep(0,8), 0, 0, 1, 0, 0, 0, 0, 0, rep(0,16), 0.212),
@@ -98,11 +131,16 @@ severity_matrix <- matrix(c(
   c(rep(0,16), 1, 1, 0, 0, 1, 1, 0, 0, rep(0,8), 2*0.50),
   c(rep(0,16), 1, 1, 0, 0, 0, 0, 0, 0, rep(0,8), 0.190),
   c(rep(0,16), 0, 0, 0, 0, 1, 1, 0, 0, rep(0,8), 0.268),
+  #c(rep(0,16), -2.3, -2.3, 0, 0, 1, 1, 0, 0, rep(0,8), 0),
+  #c(rep(0,16), 0, 0, 1, 1, 0, 0, 0, 0, rep(0,8), 0.405),
+  #c(rep(0,16), 0, 0, 0, 0, 0, 0, 1, 1, rep(0,8), 0.23),
+  #c(rep(0,16), 0, 0, 1, 1, 0, 0, 1, 1, rep(0,8), 2*0.53),
   c(rep(0,16), 0, 0, 1, -1, 0, 0, 0, 0, rep(0,8), 0),
   c(rep(0,16), 0, 0, 0, 0, 0, 0, 1, -1, rep(0,8), 0),
   c(rep(0,16), 1, 0, 0, 0, 1, 0, 0, 0, rep(0,8), 2*0.05),
   c(rep(0,16), 1, 0, 0, 0, 1, 0, 0, 0, rep(0,8), 2*0.131),
   c(rep(0,16), 1, 0, 0, 0, 1, 0, 0, 0, rep(0,8), 2*0.17),
+  #c(rep(0,16), -1.9, 0, 0, 0, 1, 0, 0, 0, rep(0,8), 0),
   c(rep(0,16), 0, -75.3/24.7, 1, 1, 0, -75.3/24.7, 1, 1, rep(0,8), 0),
   c(rep(0,16), 1, 1, 1, 1, 0, 0, 0, 0, rep(0,8), 1),
   c(rep(0,16), 0, 0, 0, 0, 1, 1, 1, 1, rep(0,8), 1),
@@ -120,6 +158,7 @@ severity_matrix <- matrix(c(
   c(rep(0,24), 1, 1, 1, 1, 0, 0, 0, 0, 1),
   c(rep(0,24), 0, 0, 0, 0, 1, 1, 1, 1, 1),
   c(rep(0,24), 1, 0, 0, 0, 1, 0, 0, 0, 0.08),
+  #c(rep(0,24), 0, 0, 0, 1, 0, 0, 0, 1, 0.71*2),
   c(rep(0,24), 0, 0, 0, 0, 1, 0, 0, 0, 0.022),
   c(rep(0,24), 0, 0, 0, 0, 1, 0, 0, 0, 0.042),
   c(rep(0,24), 0, 0, 0, 0, 1, 0, 0, 0, 0.043),
@@ -128,7 +167,7 @@ severity_matrix <- matrix(c(
   c(rep(0,28), 1, 0, 0, 0, 0.154),
   #all
   c(rep(0,12), 1, 0, 0, 0, rep(0,4), 1, 0, 0, 0, rep(0,4), 1, 0, 0, 0, 3*0.094)
-
+  
 ),
 ncol = 33,
 byrow = TRUE
@@ -200,8 +239,7 @@ policy_Yes_NOAC <- array(c(0, 1,
 ###################################
 ## Disability coefficients table ##
 ###################################
-library(dplyr)
-library(gt)
+
 gt(severity.df, rowname_col = "row_names", groupname_col = "group_names") %>%
   tab_header(title = "Disability coefficients with or without NOAC medication") %>%
   fmt_number(rows = everything(), columns = everything(), decimals = 3) %>%
@@ -215,7 +253,7 @@ rm(severity.df)
 #by: Aleksi Kristian Winsten
 #email: alkrwi@utu.fi
 #University of Turku, Finland
-decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 240, size = 10000, initial_state = NULL, seed = NULL, end.NOAC.after.bleeding = FALSE) {
+decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 240, size = 10000, initial_state = NULL, seed = NULL, end.NOAC.after.bleeding = FALSE, age = 70, prob.sens = FALSE) {
   #isRisk: stroke risk percents
   #policy: the policy to medicate patients
   #severity: proportions of different severities of the outcome
@@ -225,6 +263,8 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
   #base_qaly: quality adjusted life without any outcomes
   #initial_state: the initial health state to start the simulation
   #seed: integer seed for RNG
+  #age: age of the hypothetical patient
+  #prob.sens: option to do probability sensitivity analysis
   ##################################################################################################################
   #linear functions to calculate bleedin, mortality, and stroke relative risk as a function of ischemic stroke risk#
   ##################################################################################################################
@@ -236,6 +276,7 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
   mortality <- function(x) {
     as.numeric(mortality_coef[1] + x * mortality_coef[2])/100
   }
+  
   #medication effect on stroke relative to strokerisk
   noacRR_coef <- c(intercept = sum(1/5 * c(6, -1) * c(0.68, 0.32)), 
                    beta = sum(1/5 * c(-1, 1) * c(0.68, 0.32)))
@@ -246,6 +287,26 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
       0.32
     }
   }
+  
+  if (prob.sens){
+    noacRR <- function(x) {
+      if (x <= 6){
+        noacrr <- as.numeric(noacRR_coef[1] + noacRR_coef[2] * x)
+      } else {
+        noacrr <- 0.32
+      }
+      exp(rnorm(1, mean = log(noacrr), sd = 0.16))
+    }
+  }
+  
+  
+  #medication effect on bleeding relative to stroke risk for sens analysis
+  bleedRR_coef <- 1.91
+  
+  if (prob.sens){
+    bleedRR_coef <- exp(rnorm(1, mean = log(bleedRR_coef), sd = 0.3))
+  }
+  
   #death relative risk if medicated
   if (policy[2,2] == 1 & isRisk <= 1) {
     deathRR <- 1
@@ -256,13 +317,19 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
   } else {
     deathRR <- 1
   }
+  
+  if (prob.sens){
+    deathRR <- exp(rnorm(1, mean = log(deathRR), sd = 0.13))
+  }
+  
+  
   ###########################################
   # use linear functions to calculate rates #
   ###########################################
-  effectCoefficients <- c(Stroke = noacRR(isRisk), Bleed = 1.91) #medication effect for stroke and bleed
+  effectCoefficients <- c(Stroke = noacRR(isRisk), Bleed = bleedRR_coef) #medication effect for stroke and bleed
   total_bleed_rate <- majorBleed(isRisk)
   bleed_proportions <- c(0.11, 0.07, 0.82) #c(0.0018, 0.0015, 0.0073)/total_bleed_rate
-  total_bleed_rate_difference <- effectCoefficients[2] * total_bleed_rate - total_bleed_rate
+  total_bleed_rate_difference <- effectCoefficients["Bleed"] * total_bleed_rate - total_bleed_rate
   stroke_rate <- c(NoNOAC = 1, NOAC = effectCoefficients["Stroke"])*(isRisk/100) #medication effect on stroke with base rate 0.0105
   #bleed rates according to different bleeding proportions with different treatments
   #The base bleeding rate is
@@ -272,7 +339,7 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
                        byrow = TRUE,
                        dimnames = list(c("No NOAC", "NOAC"),
                                        c("ICH","Subdural","Other major bleed")))
-  death_rate <- mortality(isRisk)*deathRR #base death rate
+  death_rate <- (mortality(isRisk) - sum(severity[1,,2]*c(stroke_rate[2], bleed_rate[2,]))*min(max(0,(isRisk-1)/5),1))*deathRR #base death rate
   
   rates_without_noac <- c(death_rate/12, stroke_rate[1]/12, bleed_rate[1,]/12) #rates without noac treatment
   rates_with_noac <- c(death_rate/12, stroke_rate[2]/12, bleed_rate[2,]/12) #rates with noac treatment
@@ -292,7 +359,16 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
                          dim = c(5,2),
                          dimnames = list(c("Death", "Severe disability", "Moderate disability", "Mild disability", "No disability"),
                                          c("until 6 months after event", "from 6 months after event")))
-  base_qaly <- c(rep(0.794,120), rep(0.733, 240-120))
+  if (age == 70){
+    base_qaly <- c(rep(0.794,120), rep(0.733, 240-120))
+  } else if (age == 60) {
+    base_qaly <- c(rep(0.808,120), rep(0.794, 240-120))
+  } else if (age == 80) {
+    base_qaly <- c(rep(0.733,120), rep(0.733, 240-120))
+  } else {
+    base_qaly <- c(rep(0.794,120), rep(0.733, 240-120))
+  }
+  
   qaly <- severity_qaly%o%rep(1,241) #outer product to define life long qalys
   states <- 1:(dim(rate)[1]) # get health states
   actions <- 1:(dim(policy)[1])# get actions (No NOAC treatment, Yes NOAC treatment)
@@ -386,25 +462,25 @@ decisionMaker <- function(isRisk = 1, policy = NULL, severity = NULL, months = 2
 #################################
 ## The Markov Decision Process ##
 #################################
-#set simulation size
-sim <- 10000
-#set global seed for the random number generator
-seed <- 46692
-#set policy to keep NOAC medication after hemorrhagic stroke and other
-#intracranial bleeding or not
-end.noac.after.bleeding <- FALSE
 
-#simulate
+
+#################
+#### simulate ###
+#################
+
+
 simulated_cumqalys_without_noac <- lapply(seq(0,10, by = 0.1), function(isRisk) {
   lapply(decisionMaker(
     isRisk = isRisk, 
     policy = policy_No_NOAC, 
     severity = severity_input, 
-    months = 240, 
+    months = sim.time, 
     size = sim, 
     initial_state = 2, #inital state 2 is susceptible
     seed = seed,
-    end.NOAC.after.bleeding = end.noac.after.bleeding
+    end.NOAC.after.bleeding = end.noac.after.bleeding,
+    age = age,
+    prob.sens = FALSE
   ), 
   function(x) {
     temp.table <- table(x[["Observation"]])[c("1", "2", "3", "4", "5", "6")]
@@ -418,6 +494,7 @@ simulated_cumqalys_without_noac <- lapply(seq(0,10, by = 0.1), function(isRisk) 
   )
 })
 
+
 #iterate over ischemic stroke risk between 0 and 10
 simulated_cumqalys_with_noac <- lapply(seq(0,10, by = 0.1), function(isRisk) {
   #simulate all individuals life events and their qalys
@@ -425,11 +502,13 @@ simulated_cumqalys_with_noac <- lapply(seq(0,10, by = 0.1), function(isRisk) {
     isRisk = isRisk, 
     policy = policy_Yes_NOAC, 
     severity = severity_input, 
-    months = 240, #240
+    months = sim.time, #240
     size = sim, 
     initial_state = 2, #inital state 2 is susceptible
     seed = seed,
-    end.NOAC.after.bleeding = end.noac.after.bleeding
+    end.NOAC.after.bleeding = end.noac.after.bleeding,
+    age = age,
+    prob.sens = FALSE
   ), 
   #make a list of observations and QALY in the end of followup
   function(x) {
@@ -443,6 +522,7 @@ simulated_cumqalys_with_noac <- lapply(seq(0,10, by = 0.1), function(isRisk) {
   }
   )
 })
+
 
 #
 for (i in 1:101){
@@ -463,19 +543,5 @@ for (i in 1:101){
 }
 #
 
-
-##########################
-## Mean QALY difference ##
-##########################
-
-#mean QALY difference at the end of follow up
-#stroke risk 0.5%
-mean(sapply(simulated_cumqalys_with_noac[[6]], function(x) x$QALY) - sapply(simulated_cumqalys_without_noac[[6]], function(x) x$QALY))
-#stroke risk 1%
-mean(sapply(simulated_cumqalys_with_noac[[11]], function(x) x$QALY) - sapply(simulated_cumqalys_without_noac[[11]], function(x) x$QALY))
-#stroke risk 2%
-mean(sapply(simulated_cumqalys_with_noac[[21]], function(x) x$QALY) - sapply(simulated_cumqalys_without_noac[[21]], function(x) x$QALY))
-#stroke risk 5%
-mean(sapply(simulated_cumqalys_with_noac[[51]], function(x) x$QALY) - sapply(simulated_cumqalys_without_noac[[51]], function(x) x$QALY))
-
-
+# Save all R objects from the main analyses
+save.image(file = "main-analysis-80-year-olds.RData")
