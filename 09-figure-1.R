@@ -57,6 +57,7 @@ eckmann_without_noac_df <- do.call(rbind,
                                    )
 )
 colnames(eckmann_without_noac_df) <- c("mean.without", "lower.without", "upper.without")
+# Restore original data range
 df <- cbind(ISrisk = seq(0,10,by=0.1), eckmann_with_noac_df)
 df <- cbind(df, eckmann_without_noac_df)
 df <- as.data.frame(df)
@@ -74,7 +75,7 @@ showtext_begin()  # Explicitly begin showtext
 
 p <- ggplot(df, aes(x = ISrisk)) +
   
-  ggtitle("20-year cumulative QALY expectancy by annual stroke risk") +
+  #ggtitle("20-year cumulative QALY expectancy by annual stroke risk") +
   
   theme_classic(base_family = "rosario") +
   
@@ -88,9 +89,9 @@ p <- ggplot(df, aes(x = ISrisk)) +
   ) +
   
   theme(axis.title.x = element_text(
-    margin = margin(t = 12, unit = "pt")),  # Adjust margin for x-axis title
+    margin = margin(t = 26, unit = "pt")),  # Adjust margin for x-axis title
     axis.title.y = element_text(
-      margin = margin(r = 12, unit = "pt"))) +  # Adjust margin for y-axis title
+      margin = margin(r = 22, unit = "pt"))) +  # Adjust margin for y-axis title
   
   labs(y = "Cumulative QALYs",
        x =  "Annual untreated stroke risk (%)") +
@@ -103,16 +104,16 @@ p <- ggplot(df, aes(x = ISrisk)) +
   ) +
   
   scale_x_continuous(expand = c(0, 0),
-                     breaks = seq(0, 10, by = 1),
-                     limits=c(0,10)
+                     breaks = seq(0, 3, by = 0.5),
+                     limits=c(0,3)
   ) +
   
-  annotate("text", x = 5.5, y = 8.2, label = "With NOAC",
-           size = 5, color="black", hjust = 1.0,
+  annotate("text", x = 1.5, y = 10.2, label = "With DOAC",
+           size = 5, color="black", hjust = 0.0,
            family = "rosario") +
   
-  annotate("text", x = 6.2, y = 4.3, label = "Without NOAC",
-           size = 5, color="black", hjust = 1.0,
+  annotate("text", x = 1.5, y = 8, label = "Without DOAC",
+           size = 5, color="black", hjust = 0.0,
            family = "rosario") +
   
   geom_line(aes(y=mean.with), color='#E6A03C', linewidth = 1) +
@@ -137,9 +138,14 @@ grid.draw(gt)
 showtext_end()  # End showtext
 dev.off()
 
-# Create PNG version
-pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 300)
+# Create TIFF version
+pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 1200)
 image_write(pdf_image,
-            path = paste0(save.prefix, ".png"),
-            format = "png",
-            density = 300)
+            path = paste0(save.prefix, ".tiff"),
+            format = "tiff",
+            density = 1200,
+            compression = "LZW"
+            )
+
+ 
+

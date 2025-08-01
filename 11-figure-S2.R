@@ -86,9 +86,12 @@ grid.draw(gt)
 showtext_end()  # End showtext
 dev.off()
 
-# Create PNG version
-pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 300)
-magick::image_write(pdf_image,
-                    path = paste0(save.prefix, ".png"),
-                    format = "png",
-                    density = 300)
+# Create TIFF version
+pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 1200)
+image_write(pdf_image,
+            path = paste0(save.prefix, ".tiff"),
+            format = "tiff",
+            density = 1200,
+            compression = "LZW"
+)
+

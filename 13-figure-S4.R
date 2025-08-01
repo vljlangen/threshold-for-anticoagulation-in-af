@@ -8,6 +8,10 @@ load("data/main-analysis-70-year-olds.RData")
 
 library(pacman)
 
+save.prefix <- "figures/figure_S4"
+
+
+
 #Load rest of packages with pacman
 p_load(ggplot2, dplyr, showtext, magick,
        stringr, ggstream, cowplot, grid)
@@ -154,7 +158,7 @@ p1 <- with_noac_plot_data %>%
         axis.title.y = element_text(size = base_size_constant,
                                     face = "bold",
                                     margin = margin(r = y_margin, unit = "pt"))) +
-  ggtitle("With\nNOAC medication")
+  ggtitle("With\nDOAC medication")
 
 
 
@@ -178,7 +182,7 @@ p2 <- without_noac_plot_data %>%
         axis.title.y = element_text(size = base_size_constant,
                                     face = "bold",
                                     margin = margin(r = y_margin, unit = "pt"))) +
-  ggtitle("Without\nNOAC medication")
+  ggtitle("Without\nDOAC medication")
 
 
 
@@ -226,7 +230,7 @@ print(panel_fig2)
 ###########################################################################
 
 # For PDF with proper font handling
-pdf("figures/figure2.pdf", width = 15, height = 8)
+pdf(paste0(save.prefix, ".pdf"), width = 15, height = 8)
 showtext_begin()  # Explicitly begin showtext
 
 # Draw the panel
@@ -235,10 +239,13 @@ print(panel_fig2)
 showtext_end()  # End showtext
 dev.off()
 
-# Create PNG version
-pdf_image <- magick::image_read_pdf("figures/figure2.pdf", density = 600)
+
+# Create TIFF version
+pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 1200)
 image_write(pdf_image,
-            path = "figures/figure2.png",
-            format = "png",
-            density = 600)
+            path = paste0(save.prefix, ".tiff"),
+            format = "tiff",
+            density = 1200,
+            compression = "LZW"
+)
 

@@ -18,7 +18,7 @@
 #set simulation size
 sim <- 10000
 #simulation time
-sim.time <- 20*12 #years * months in a year
+sim.time <- 10*12 #years * months in a year
 #set global seed for the random number generator
 seed <- 46692
 #set policy to keep NOAC medication after hemorrhagic stroke and other

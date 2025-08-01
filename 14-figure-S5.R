@@ -7,7 +7,7 @@
 #############################################################
 
 
-#load("data/main-analysis-70-year-olds.RData")
+load("data/main-analysis-70-year-olds.RData")
 
 
 #################################################################
@@ -20,10 +20,10 @@ p_load(ggplot2, ggstream, showtext, magick, grid)
 
 
 ###############
-## Figure S3 ##
+## Figure S5 ##
 ###############
 
-save.prefix <- "figures/figure_s3"
+save.prefix <- "figures/figure_S5"
 
 
 
@@ -110,11 +110,11 @@ p <- ggplot(df, aes(x = ISrisk)) +
                      limits=c(0,10)
   ) +
   
-  annotate("text", x = 5.5, y = 10.8, label = "With NOAC",
+  annotate("text", x = 5.5, y = 10.8, label = "With DOAC",
            size = 5, color="black", hjust = 1.0,
            family = "rosario") +
   
-  annotate("text", x = 6.2, y = 6.0, label = "Without NOAC",
+  annotate("text", x = 6.2, y = 6.0, label = "Without DOAC",
            size = 5, color="black", hjust = 1.0,
            family = "rosario") +
   
@@ -140,11 +140,13 @@ grid.draw(gt)
 showtext_end()  # End showtext
 dev.off()
 
-# Create PNG version
-pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 300)
+# Create TIFF version
+pdf_image <- magick::image_read_pdf(paste0(save.prefix, ".pdf"), density = 1200)
 image_write(pdf_image,
-            path = paste0(save.prefix, ".png"),
-            format = "png",
-            density = 300)
+            path = paste0(save.prefix, ".tiff"),
+            format = "tiff",
+            density = 1200,
+            compression = "LZW"
+)
 
 
