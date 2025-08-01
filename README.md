@@ -1,12 +1,12 @@
-# Eckmann Revisited: NOAC Therapy Analysis
+# Analysis code for the article "What is the stroke risk threshold for anticoagulation to provide net benefit in atrial fibrillation? A Markov decision model analysis"
 
-A comprehensive decision-analytic model examining Novel Oral Anticoagulant (NOAC) therapy in patients with atrial fibrillation, focusing on treatment thresholds and net benefit analysis across varying stroke risk levels.
+A comprehensive decision-analytic model examining direct oral anticoagulant (DOAC) therapy in patients with atrial fibrillation, focusing on treatment thresholds and net benefit analysis across varying stroke risk levels.
 
 ## Project Overview
 
 While randomized trials have clearly demonstrated the benefits of anticoagulant therapy in atrial fibrillation (AF) patients at high risk of ischemic stroke, less is known about the benefit in lower-risk patients. This project addresses the critical question: exactly how low baseline stroke risk justifies attempts to reduce it with oral anticoagulants?
 
-This study develops a Markov decision model to estimate the impact of initiating non-vitamin K antagonist oral anticoagulants (NOACs) on quality-adjusted life-years (QALYs) in AF patients across a range of non-anticoagulated ischemic stroke risk levels. The analysis includes:
+This study develops a Markov decision model to estimate the impact of initiating direct oral anticoagulants (DOACs) on quality-adjusted life-years (QALYs) in AF patients across a range of non-anticoagulated ischemic stroke risk levels. The analysis includes:
 
 - **Main analysis** for 60, 70, and 80-year-old patient cohorts
 - **Probabilistic sensitivity analysis** with Monte Carlo simulations
@@ -92,8 +92,8 @@ Each script can be run independently if specific outputs are needed.
 - **Figure S7**: Mean 20-year cumulative QALYs by annual stroke risk (probabilistic sensitivity analysis).
 
 ### Key Metrics
-- **Treatment Tipping Points**: Annual non-anticoagulated ischemic stroke risk thresholds where NOAC therapy provides net benefit
-- **QALY Differences**: Quality-adjusted life year gains/losses comparing NOAC therapy vs. withholding treatment
+- **Treatment Tipping Points**: Annual non-anticoagulated ischemic stroke risk thresholds where DOAC therapy provides net benefit
+- **QALY Differences**: Quality-adjusted life year gains/losses comparing DOAC therapy vs. withholding treatment
 - **Probability Analysis**: Likelihood of treatment benefit across varying stroke risk levels in sensitivity analyses
 - **Risk-Stratified Outcomes**: Benefits quantified across different baseline stroke risk categories
 
@@ -102,7 +102,7 @@ Each script can be run independently if specific outputs are needed.
 The analysis employs a **Markov decision model** incorporating:
 
 ### Data Sources
-- **Randomized controlled trial data** on NOAC effects on:
+- **Randomized controlled trial data** on DOAC effects on:
   - Severity and risk of ischemic stroke
   - Major bleeding events
   - Mortality outcomes
@@ -117,13 +117,13 @@ The analysis employs a **Markov decision model** incorporating:
 - **Quality-adjusted life years (QALYs)** as primary outcome measure
 
 ### Clinical Focus
-- **Treatment threshold identification** for when NOACs provide net benefit
+- **Treatment threshold identification** for when DOACs provide net benefit
 - **Risk-stratified analysis** across varying non-anticoagulated ischemic stroke risk levels
 - **Age-specific modeling** for 60, 70, and 80-year-old patient cohorts
 
 ## Research Keywords
 
-Atrial fibrillation • Anticoagulation • Stroke risk • Treatment threshold • Net benefit • Quality of life • NOACs • Decision analysis
+Atrial fibrillation • Anticoagulation • Stroke risk • Treatment threshold • Net benefit • Quality of life • DOACs • Decision analysis
 
 ## Citation
 
